@@ -24,10 +24,18 @@ app.use("/api/orders", orderRoute);
 
 const PORT = process.env.PORT || 3000;
 
+app.get("/health", (req, res) => {
+    res.status(200).json({
+        status: "UP",
+        message: "Server is running"
+    })
+})
+
 async function startServer() {
     await connectDB();
 
     app.listen(PORT, () => {
+        console.log("Deployed again")
         console.log(`Server is up on port ${PORT}`);
     });
 }
