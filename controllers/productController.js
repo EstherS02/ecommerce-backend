@@ -166,8 +166,6 @@ export async function updateProduct(req, res) {
             })
         }
 
-        console.log(req.params.id, req.body)
-
         const updatedProduct = await Product.findByIdAndUpdate(
             req.params.id,
             req.body,

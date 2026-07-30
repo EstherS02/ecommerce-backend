@@ -6,8 +6,6 @@ export async function uploadToS3(file) {
     try {
         const fileContent = await fs.readFile(file.path);
 
-        console.log("------------------", fileContent)
-
         const command = new PutObjectCommand({
             Bucket: process.env.AWS_BUCKET_NAME,
             Key: file.filename,
