@@ -1,8 +1,6 @@
 services:
   backend:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: 250761481176.dkr.ecr.ap-south-1.amazonaws.com/ecommerce-backend:${IMAGE_TAG}
 
     container_name: ecommerce-api
 
