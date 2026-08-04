@@ -58,6 +58,7 @@ pipeline {
                             --parameters 'commands=[
                                 "cd /home/ubuntu/ecommerce-backend",
                                 "sed -i \\"s/^IMAGE_TAG=.*/IMAGE_TAG=${IMAGE_TAG}/\\" .env",
+                                "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}",
                                 "docker compose pull",
                                 "docker compose up -d"
                             ]' \
