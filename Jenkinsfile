@@ -6,6 +6,7 @@ pipeline {
         ECR_REGISTRY = '250761481176.dkr.ecr.ap-south-1.amazonaws.com'
         ECR_REPOSITORY = 'ecommerce-backend'
         IMAGE_TAG = "${BUILD_NUMBER}"
+        EC2_INSTANCE_ID = 'i-0ed0cbd24084ce087'
     }
 
     stages {
@@ -41,6 +42,23 @@ pipeline {
                 sh '''
                     docker push \
                       ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
+                '''
+            }
+        }
+
+        stage('Deploy to Application EC2') {
+            steps {
+                sh '''
+                    aws ssm send-command \
+                      --region ${AWS_REGION} \
+                      --instance-ids ${EC2_INSTANCE_ID} \
+                      --document-name "AWS-RunShellScript" \
+                      --parameters commands='[
+                        "cd /home/ubuntu/ecommerce-backend",
+                        "sed -i \"s/^IMAGE_TAG=.*/IMAGE_TAG=${IMAGE_TAG}/\" .env",
+                        "docker compose pull",
+                        "docker compose up -d"
+                      ]'
                 '''
             }
         }
