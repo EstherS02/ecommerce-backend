@@ -55,7 +55,7 @@ pipeline {
                       --document-name "AWS-RunShellScript" \
                       --parameters commands='[
                         "cd /home/ubuntu/ecommerce-backend",
-                        "sed -i \"s/^IMAGE_TAG=.*/IMAGE_TAG=${IMAGE_TAG}/\" .env",
+                        "sed -i 's/^IMAGE_TAG=.*/IMAGE_TAG=${IMAGE_TAG}/' .env",
                         "docker compose pull",
                         "docker compose up -d"
                       ]'
