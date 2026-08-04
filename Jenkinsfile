@@ -48,18 +48,43 @@ pipeline {
 
         stage('Deploy to Application EC2') {
             steps {
-                sh '''
-                    aws ssm send-command \
-                      --region ${AWS_REGION} \
-                      --instance-ids ${EC2_INSTANCE_ID} \
-                      --document-name "AWS-RunShellScript" \
-                      --parameters commands='[
-                        "cd /home/ubuntu/ecommerce-backend",
-                        "sed -i 's/^IMAGE_TAG=.*/IMAGE_TAG=${IMAGE_TAG}/' .env",
-                        "docker compose pull",
-                        "docker compose up -d"
-                      ]'
-                '''
+                script {
+                    def commandId = sh(
+                        script: """
+                            aws ssm send-command \
+                            --region ${AWS_REGION} \
+                            --instance-ids ${EC2_INSTANCE_ID} \
+                            --document-name AWS-RunShellScript \
+                            --parameters 'commands=[
+                                "cd /home/ubuntu/ecommerce-backend",
+                                "sed -i \\"s/^IMAGE_TAG=.*/IMAGE_TAG=${IMAGE_TAG}/\\" .env",
+                                "docker compose pull",
+                                "docker compose up -d"
+                            ]' \
+                            --query 'Command.CommandId' \
+                            --output text
+                        """,
+                        returnStdout: true
+                    ).trim()
+
+                    echo "SSM Command ID: ${commandId}"
+
+                    def status = sh(
+                        script: """
+                            aws ssm wait command-executed \
+                            --region ${AWS_REGION} \
+                            --command-id ${commandId} \
+                            --instance-id ${EC2_INSTANCE_ID}
+                        """,
+                        returnStatus: true
+                    )
+
+                    if (status != 0) {
+                        error("Deployment failed on Application EC2")
+                    }
+
+                    echo "Deployment completed successfully."
+                }
             }
         }
     }
