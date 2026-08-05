@@ -24,7 +24,7 @@ app.use("/api/orders", orderRoute);
 
 const PORT = process.env.PORT || 3000;
 
-app.get("/health", (req, res) => {
+app.get("/api/health", (req, res) => {
     res.status(200).json({
         status: "UP",
         message: "Server is running"

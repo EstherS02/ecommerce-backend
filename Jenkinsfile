@@ -72,6 +72,7 @@ pipeline {
         stage('Deploy to Application EC2') {
             steps {
                 script {
+
                     def commandId = sh(
                         script: """
                             aws ssm send-command \
@@ -80,10 +81,14 @@ pipeline {
                             --document-name AWS-RunShellScript \
                             --parameters 'commands=[
                                 "cd /home/ubuntu/ecommerce-backend",
+                                "CURRENT_TAG=\\$(grep ^IMAGE_TAG= .env | cut -d= -f2)",
+                                "echo Previous version: \\$CURRENT_TAG",
                                 "sed -i \\"s/^IMAGE_TAG=.*/IMAGE_TAG=${DEPLOY_IMAGE_TAG}/\\" .env",
                                 "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}",
                                 "docker compose pull",
-                                "docker compose up -d"
+                                "docker compose up -d",
+                                "sleep 5",
+                                "curl -f http://localhost/api/health"
                             ]' \
                             --query 'Command.CommandId' \
                             --output text
