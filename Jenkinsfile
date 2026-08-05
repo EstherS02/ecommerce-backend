@@ -144,7 +144,7 @@ pipeline {
                                 "docker compose pull",
                                 "docker compose up -d",
                                 "sleep 5",
-                                "curl -f http://localhost/api/health-invalid"
+                                "curl -f http://localhost/api/health"
                             ]' \
                             --query 'Command.CommandId' \
                             --output text
