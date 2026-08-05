@@ -76,8 +76,8 @@ pipeline {
                     def commandId = sh(
                         script: """
                             aws ssm send-command \
-                            --region ${AWS_REGION} \
-                            --instance-ids ${EC2_INSTANCE_ID} \
+                            --region '${AWS_REGION}' \
+                            --instance-ids '${EC2_INSTANCE_ID}' \
                             --document-name AWS-RunShellScript \
                             --parameters 'commands=[
                                 "cd /home/ubuntu/ecommerce-backend",
@@ -101,9 +101,9 @@ pipeline {
                     def status = sh(
                         script: """
                             aws ssm wait command-executed \
-                            --region ${AWS_REGION} \
-                            --command-id ${commandId} \
-                            --instance-id ${EC2_INSTANCE_ID}
+                            --region '${AWS_REGION}' \
+                            --command-id '${commandId}' \
+                            --instance-id '${EC2_INSTANCE_ID}'
                         """,
                         returnStatus: true
                     )
