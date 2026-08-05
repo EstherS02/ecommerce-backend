@@ -75,22 +75,22 @@ pipeline {
 
                     def commandId = sh(
                         script: """
-                            aws ssm send-command \
-                            --region '${AWS_REGION}' \
-                            --instance-ids '${EC2_INSTANCE_ID}' \
-                            --document-name AWS-RunShellScript \
+                            aws ssm send-command \\
+                            --region '${AWS_REGION}' \\
+                            --instance-ids '${EC2_INSTANCE_ID}' \\
+                            --document-name AWS-RunShellScript \\
                             --parameters 'commands=[
                                 "cd /home/ubuntu/ecommerce-backend",
                                 "CURRENT_TAG=\\$(grep ^IMAGE_TAG= .env | cut -d= -f2)",
-                                "echo Previous version: \\$CURRENT_TAG",
+                                "echo Previous version: \\\$CURRENT_TAG",
                                 "sed -i \\"s/^IMAGE_TAG=.*/IMAGE_TAG=${DEPLOY_IMAGE_TAG}/\\" .env",
                                 "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}",
                                 "docker compose pull",
                                 "docker compose up -d",
                                 "sleep 5",
                                 "curl -f http://localhost/api/health"
-                            ]' \
-                            --query 'Command.CommandId' \
+                            ]' \\
+                            --query 'Command.CommandId' \\
                             --output text
                         """,
                         returnStdout: true
@@ -100,9 +100,9 @@ pipeline {
 
                     def status = sh(
                         script: """
-                            aws ssm wait command-executed \
-                            --region '${AWS_REGION}' \
-                            --command-id '${commandId}' \
+                            aws ssm wait command-executed \\
+                            --region '${AWS_REGION}' \\
+                            --command-id '${commandId}' \\
                             --instance-id '${EC2_INSTANCE_ID}'
                         """,
                         returnStatus: true
@@ -117,5 +117,6 @@ pipeline {
                 }
             }
         }
+
     }
 }
