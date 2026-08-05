@@ -1,6 +1,14 @@
 pipeline {
     agent any
 
+    parameters {
+        string(
+            name: 'DEPLOY_TAG',
+            defaultValue: '',
+            description: 'ECR image tag to deploy. Leave empty to deploy the current build.'
+        )
+    }
+
     environment {
         AWS_REGION = 'ap-south-1'
         ECR_REGISTRY = '250761481176.dkr.ecr.ap-south-1.amazonaws.com'
@@ -46,6 +54,21 @@ pipeline {
             }
         }
 
+        stage('Select Deployment Version') {
+            steps {
+                script {
+                    if (params.DEPLOY_TAG?.trim()) {
+                        env.DEPLOY_IMAGE_TAG = params.DEPLOY_TAG.trim()
+                    } else {
+                        env.DEPLOY_IMAGE_TAG = env.IMAGE_TAG
+                    }
+
+                    echo "Image built: ${env.IMAGE_TAG}"
+                    echo "Image to deploy: ${env.DEPLOY_IMAGE_TAG}"
+                }
+            }
+        }
+
         stage('Deploy to Application EC2') {
             steps {
                 script {
@@ -57,7 +80,7 @@ pipeline {
                             --document-name AWS-RunShellScript \
                             --parameters 'commands=[
                                 "cd /home/ubuntu/ecommerce-backend",
-                                "sed -i \\"s/^IMAGE_TAG=.*/IMAGE_TAG=${IMAGE_TAG}/\\" .env",
+                                "sed -i \\"s/^IMAGE_TAG=.*/IMAGE_TAG=${DEPLOY_IMAGE_TAG}/\\" .env",
                                 "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}",
                                 "docker compose pull",
                                 "docker compose up -d"
@@ -85,6 +108,7 @@ pipeline {
                     }
 
                     echo "Deployment completed successfully."
+                    echo "Deployed image: ${ECR_REGISTRY}/${ECR_REPOSITORY}:${DEPLOY_IMAGE_TAG}"
                 }
             }
         }
